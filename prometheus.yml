@@ -1,0 +1,46 @@
+# my global config
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  # scrape_timeout uses default (10s)
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+          # e.g. - alertmanager:9093
+
+rule_files: []
+  # e.g. - "first_rules.yml"
+
+scrape_configs:
+  # Prometheus itself
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+        labels:
+          app: "prometheus"
+
+  # Windows Exporter on this same PC
+  - job_name: "windows_exporter"
+    static_configs:
+      - targets: ["localhost:9182"]
+        labels:
+          app: "windows-exporter"
+
+  # Blackbox Exporter (HTTP checks)
+  - job_name: "blackbox"
+    metrics_path: /probe
+    params:
+      module: [http_2xx]   # which probe module to use (http, tcp, icmp, dns, etc.)
+    static_configs:
+      - targets:
+          - http://example.com
+          - https://google.com
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: localhost:9115   # Blackbox Exporter address
