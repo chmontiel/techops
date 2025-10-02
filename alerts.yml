@@ -1,0 +1,12 @@
+groups:
+  - name: windows-alerts
+    rules:
+      - alert: WindowsHighMemory
+        # 100% - (free / total * 100)  > 60%
+        expr: 100 - ((windows_os_physical_memory_free_bytes / windows_cs_physical_memory_bytes) * 100) > 60
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }} ({{ printf \"%.1f\" $value }}%)"
+          description: "Memory usage has been > 60% for 5 minutes on {{ $labels.instance }}."
